@@ -1,17 +1,20 @@
 $fn = 180;
 
 function in2mm(in) = in*25.4 ; 
+function mm2in(mm) = mm/25.4 ; 
 
 // User parameters
+npt   = "FTC Racing";
+npft  = "#10-32 1.25\"";
 e     = in2mm(0.03125 ); // Fit tolerance
-T     = in2mm(0.75    ); // Part Z thickness
+T     = in2mm(0.55    ); // Part Z thickness
 SDIA  = in2mm(1.75    ); // Strut diameter   
 BDIA  = in2mm(0.3125  ); // Brake line diameter 
 WALL  = in2mm(0.375   ); // Part wall thickness 
 CL    = in2mm(0.75    ); // Clamp section length
 CLD   = in2mm(0.5     ); // Clamp section depth
-NUTOD = in2mm(0.505   ); // Nut O.D. for 1/4-20
-THROD = in2mm(0.25    ); // Thread O.D. for 1/4-20
+NUTOD = in2mm(0.421875); // Nut O.D. for 1/4-20
+THROD = in2mm(0.19    ); // Thread O.D. for 1/4-20
 
 LAPA  =       10       ; // Lap angle
 
@@ -41,7 +44,24 @@ module bolt_clearance() {
     cylinder(r=THROD/2,h=CLD+2*oc);
   
   translate([0,0,CLD])
-    hexagon(NUTOD/2,(SDIA-BDIA)/2,e);
+    hexagon(NUTOD/2,(SDIA-BDIA)/2,e/2);
+}
+
+// Nameplate
+module nameplate(scale) {
+  linear_extrude(height=oc) {
+    scale([scale,scale,1])
+      union() {
+        translate([-6,5,0])
+          text(str(npt),size=6,font="Impact");
+        translate([-10,-5,0])
+          text(str(npft),size=6,font="Impact");
+        translate([-14,-15,0])
+          text(str(
+            mm2in(BDIA),"\"/",
+            mm2in(SDIA),"\""),size=6,font="Impact");
+      }
+  }
 }
 
 // Brake clamp model
@@ -76,9 +96,12 @@ module brake_clamp() {
     translate([0,(CL+SDIA)/2,0])
       rotate([180,90,0])
         bolt_clearance();
+        
+    // Nameplate
+    #translate([-14,(CL+SDIA)/2,T/2-oc/2])
+      nameplate(0.4);
   }
 }
-
 
 // Do the do
 brake_clamp();  
